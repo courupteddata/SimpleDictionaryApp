@@ -28,7 +28,7 @@ async def handle(definition_request: DefinitionRequest):
         INSERT INTO definition (word, definition)
         VALUES (%s, %s)
         ON CONFLICT (word) DO UPDATE SET
-        (definition) = (EXCLUDED.definition);
+        (definition) = ROW(EXCLUDED.definition);
     '''
 
     with postgres_connection:
