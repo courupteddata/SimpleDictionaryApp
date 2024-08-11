@@ -50,7 +50,7 @@ async def get_word(word: str) -> DefinitionResponse:
     if not found_definition:
         await router.broker.publish(DefinitionRequest(word=word), "definition_request")
         return DefinitionResponse(word=word, definition="Please wait, definition still needs to be collected")
-    return DefinitionResponse(word=word, definition=found_definition)
+    return DefinitionResponse(word=word, definition=found_definition[0])
 
 
 @app.get(
