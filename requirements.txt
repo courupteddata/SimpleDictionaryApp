@@ -1,0 +1,8 @@
+fastapi
+SQLAlchemy
+psycopg2-binary
+httpx
+uvicorn
+pydantic
+faststream[rabbit]
+aio-pika

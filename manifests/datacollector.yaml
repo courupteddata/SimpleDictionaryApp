@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-collector
+  template:
+    metadata:
+      labels:
+        app: data-collector
+    spec:
+      containers:
+        - name: data-collector
+          image: image_name_replace
+          env:
+            - name: AMQP_URL
+              value: "amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres-lb-service.default.svc.cluster.local:5432/dictionary"
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 200m
+          # readinessProbe:
+          # livenessProbe:

@@ -1,0 +1,4 @@
+# Dictionary App
+
+### Database structure
+

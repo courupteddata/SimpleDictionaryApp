@@ -1,0 +1,57 @@
+name: build-and-deploy
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DATA_COLLECTOR_IMAGE_NAME: "data-collector"
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta-data-collector
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/${{ env.DATA_COLLECTOR_IMAGE_NAME }}
+
+      - name: Build and push Docker image data-collector
+        id: push-data-collector
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: ./datacollector/Dockerfile
+          push: true
+          tags: ${{ steps.meta-data-collector.outputs.tags }}
+          labels: ${{ steps.meta-data-collector.outputs.labels }}
+
+      # Update manifest with correct version
+      - run: |
+          sed -i 's#image_name_replace#${{ secrets.DOCKER_USERNAME }}/${{ env.DATA_COLLECTOR_IMAGE_NAME }}@${{ steps.push-data-collector.outputs.digest }}#g' manifests/datacollector.yaml
+
+      - name: Kubernetes set context
+        uses: Azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+
+      - uses: Azure/k8s-deploy@v5
+        with:
+          resource-group: cluster1
+          name: cluster1
+          action: deploy
+          strategy: basic
+          manifests: |
+            manifests/postgres.yaml
+            manifests/rabbitmq.yaml
+            manifests/datacollector.yaml
