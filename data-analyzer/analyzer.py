@@ -11,6 +11,7 @@ from faststream.rabbit import RabbitBroker
 from common.basemodels import HealthCheck, DefinitionResponse, DefinitionRequest
 
 broker = RabbitBroker(url=os.environ["AMQP_URL"])
+broker.connect()
 rabbit = FastStream(broker)
 postgres_connection = psycopg2.connect(os.environ["DATABASE_URL"])
 
