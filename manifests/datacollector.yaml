@@ -27,5 +27,14 @@ spec:
             limits:
               memory: 256Mi
               cpu: 200m
-          # readinessProbe:
-          # livenessProbe:
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 5

@@ -15,7 +15,6 @@ from common.basemodels import HealthCheck, DefinitionResponse, DefinitionRequest
 broker = RabbitBroker(url=os.environ["AMQP_URL"])
 rabbit = FastStream(broker)
 postgres_connection = psycopg2.connect(os.environ["DATABASE_URL"])
-cursor = postgres_connection.cursor()
 
 app = FastAPI()
 
@@ -32,7 +31,9 @@ async def handle(definition_request: DefinitionRequest):
         (definition) = (EXCLUDED.definition);
     '''
 
-    cursor.execute(insert_sql, (word, definition))
+    with postgres_connection:
+        with postgres_connection.cursor() as cursor:
+            cursor.execute(insert_sql, (word, definition))
 
     return None
 
@@ -70,8 +71,10 @@ def get_health() -> HealthCheck:
 
 def _main():
     definition = get_definition("word")
-    cursor.execute("CREATE TABLE IF NOT EXISTS definition (word varchar(45) NOT NULL, "
-                   "definition varchar(1000), PRIMARY KEY (word))").commit()
+    with postgres_connection:
+        with postgres_connection.cursor() as cursor:
+            cursor.execute("CREATE TABLE IF NOT EXISTS definition (word varchar(45) NOT NULL, "
+                           "definition varchar(1000), PRIMARY KEY (word))")
     print(definition)
     uvicorn.run("main:app", host="0.0.0.0")
 
