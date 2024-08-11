@@ -22,7 +22,7 @@ app.include_router(router)
 @router.subscriber("definition_request")
 async def handle(definition_request: DefinitionRequest):
     word = definition_request.word.lower().strip()
-    definition = get_definition(word)
+    definition = get_definition(word).definition
 
     insert_sql = '''
         INSERT INTO definition (word, definition)
