@@ -71,7 +71,7 @@ def get_health() -> HealthCheck:
 def _main():
     definition = get_definition("word")
     cursor.execute("CREATE TABLE IF NOT EXISTS definition (word varchar(45) NOT NULL, "
-                   "definition varchar(1000), PRIMARY KEY (username))").commit()
+                   "definition varchar(1000), PRIMARY KEY (word))").commit()
     print(definition)
     uvicorn.run("main:app", host="0.0.0.0")
 
