@@ -30,7 +30,7 @@ def get_health() -> HealthCheck:
 
 
 @app.get(
-    "/definition",
+    "/definition/",
     summary="Perform a definition look up",
     response_description="Return HTTP Status Code 200 (OK)",
     status_code=status.HTTP_200_OK,
@@ -41,7 +41,7 @@ async def get_word(word: str) -> DefinitionResponse:
     found_definition = None
     with postgres_connection:
         with postgres_connection.cursor() as cursor:
-            found_definition = cursor.execute("select definition from definition where word=?", (word,)).fetchone()
+            found_definition = cursor.execute("select definition from definition where word=%s", (word,)).fetchone()
             print(found_definition)
 
     if not found_definition:
@@ -51,7 +51,7 @@ async def get_word(word: str) -> DefinitionResponse:
 
 
 @app.get(
-    "/",
+    "/index.html",
     summary="get ui",
     response_description="Return UI",
     status_code=status.HTTP_200_OK,
