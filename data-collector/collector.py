@@ -38,7 +38,6 @@ async def handle(definition_request: DefinitionRequest):
     return None
 
 
-
 def get_definition(word: str) -> DefinitionResponse | None:
     word = word.lstrip("/")
     # url = urljoin("https://en.wiktionary.org/api/rest_v1/page/definition/", word)

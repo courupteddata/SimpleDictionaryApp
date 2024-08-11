@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: definition-app
+spec:
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: data-analyzer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-analyzer
+  template:
+    metadata:
+      labels:
+        app: data-analyzer
+    spec:
+      containers:
+        - name: data-analyzer
+          image: image_name_replace
+          env:
+            - name: AMQP_URL
+              value: "amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres-lb-service.default.svc.cluster.local:5432/dictionary"
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 200m
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 5
