@@ -7,20 +7,19 @@ import psycopg2
 from fastapi import FastAPI, status
 import uvicorn
 
-from faststream import FastStream
-from faststream.rabbit import RabbitBroker
+from faststream.rabbit.fastapi import RabbitRouter
 
 from common.basemodels import HealthCheck, DefinitionResponse, DefinitionRequest
 
-broker = RabbitBroker(url=os.environ["AMQP_URL"])
-broker.connect()
-rabbit = FastStream(broker)
+router = RabbitRouter(url=os.environ["AMQP_URL"])
+
 postgres_connection = psycopg2.connect(os.environ["DATABASE_URL"])
 
-app = FastAPI()
+app = FastAPI(lifespan=router.lifespan_context)
+app.include_router(router)
 
 
-@broker.subscriber("definition_request")
+@router.subscriber("definition_request")
 async def handle(definition_request: DefinitionRequest):
     word = definition_request.word.lower().strip()
     definition = get_definition(word)

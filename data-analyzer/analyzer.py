@@ -5,17 +5,18 @@ from fastapi import FastAPI, status
 from fastapi.responses import HTMLResponse
 import uvicorn
 
-from faststream import FastStream
-from faststream.rabbit import RabbitBroker
+from faststream.rabbit.fastapi import RabbitRouter
+
 
 from common.basemodels import HealthCheck, DefinitionResponse, DefinitionRequest
 
-broker = RabbitBroker(url=os.environ["AMQP_URL"])
-broker.connect()
-rabbit = FastStream(broker)
+router = RabbitRouter(url=os.environ["AMQP_URL"])
+
 postgres_connection = psycopg2.connect(os.environ["DATABASE_URL"])
 
-app = FastAPI()
+app = FastAPI(lifespan=router.lifespan_context)
+app.include_router(router)
+
 
 
 @app.get(
@@ -47,7 +48,7 @@ async def get_word(word: str) -> DefinitionResponse:
             print(found_definition)
 
     if not found_definition:
-        await broker.publish(DefinitionRequest(word=word), "definition_request")
+        await router.broker.publish(DefinitionRequest(word=word), "definition_request")
         return DefinitionResponse(word=word, definition="Please wait, definition still needs to be collected")
     return DefinitionResponse(word=word, definition=found_definition)
 
