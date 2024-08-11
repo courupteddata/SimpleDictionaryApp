@@ -76,7 +76,7 @@ def _main():
             cursor.execute("CREATE TABLE IF NOT EXISTS definition (word varchar(45) NOT NULL, "
                            "definition varchar(1000), PRIMARY KEY (word))")
     print(definition)
-    uvicorn.run("main:app", host="0.0.0.0")
+    uvicorn.run("collector:app", host="0.0.0.0")
 
 
 if __name__ == "__main__":
